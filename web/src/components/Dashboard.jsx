@@ -121,44 +121,42 @@ function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
           </button>
         </div>
 
-        {/* Setup Warning */}
-        {setupIncomplete && (
-          <div className="space-y-3 mb-8">
-            {/* Wallet Warning */}
-            {!hasWallet && (
-              <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <Wallet className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-yellow-400 font-semibold">Carteira Necessária</h3>
-                    <p className="text-yellow-400/80 text-sm">
-                      Crie ou importe uma carteira em <strong>Carteira</strong> para continuar.
-                    </p>
-                  </div>
+        {/* Setup Warnings */}
+        <div className="space-y-3 mb-8">
+          {/* Wallet Warning */}
+          {!hasWallet && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <Wallet className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <div>
+                  <h3 className="text-red-400 font-semibold">Carteira Necessária</h3>
+                  <p className="text-red-400/80 text-sm">
+                    Crie ou importe uma carteira em <strong>Carteira</strong> para continuar.
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Node Setup Warning */}
-            {hasWallet && (!isNodeInitialized || !isValidator) && (
-              <div className="bg-orange-500/20 border border-orange-500/50 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <Settings className="w-5 h-5 text-orange-400 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-orange-400 font-semibold">Setup Node Incompleto</h3>
-                    <p className="text-orange-400/80 text-sm">
-                      {!isNodeInitialized 
-                        ? 'Inicialize o node e crie seu validador em '
-                        : 'Crie seu validador em '
-                      }
-                      <strong>Setup Node</strong> para ativar seu validador.
-                    </p>
-                  </div>
+          {/* Node Setup Warning */}
+          {(!isNodeInitialized || !isValidator) && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <div>
+                  <h3 className="text-red-400 font-semibold">Setup Node Incompleto</h3>
+                  <p className="text-red-400/80 text-sm">
+                    {!isNodeInitialized 
+                      ? 'Inicialize o node e crie seu validador em '
+                      : 'Crie seu validador em '
+                    }
+                    <strong>Setup Node</strong> para ativar seu validador.
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
