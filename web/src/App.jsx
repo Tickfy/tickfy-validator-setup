@@ -154,8 +154,8 @@ function App() {
 
   const menuItems = [
     { key: STEPS.DASHBOARD, label: 'Dashboard', description: 'Monitorar seu validador', completed: false },
-    { key: STEPS.WALLET, label: 'Carteira', description: walletCompleted ? 'Conectada' : 'Criar ou importar carteira', completed: walletCompleted },
     { key: STEPS.NODE_SETUP, label: 'Setup Node', description: nodeSetupCompleted ? 'Configurado' : 'Configurar node e validador', completed: nodeSetupCompleted },
+    { key: STEPS.WALLET, label: 'Carteira', description: walletCompleted ? 'Conectada' : 'Criar ou importar carteira', completed: walletCompleted },
   ];
 
   return (
@@ -239,7 +239,7 @@ function App() {
           />
         )}
         {currentStep === STEPS.DASHBOARD && (
-          <Dashboard nodeStatus={nodeStatus} onRefresh={handleStepComplete} />
+          <Dashboard nodeStatus={nodeStatus} onRefresh={handleStepComplete} goToStep={goToStep} />
         )}
       </div>
 

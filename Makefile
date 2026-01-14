@@ -33,6 +33,12 @@ clean:
 	rm -rf web/dist
 	rm -rf cmd/server/web/dist
 
+# Reset user config (wallets, node config, validator)
+reset:
+	@echo "🗑️  Resetting all user configuration..."
+	rm -rf ~/.tickfy-validator/*
+	@echo "✅ Configuration reset! Start fresh with 'make dev'"
+
 # Frontend only dev server
 frontend:
 	cd web && npm run dev

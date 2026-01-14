@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Activity, Power, RefreshCw, Coins, TrendingUp, Clock, 
   Server, Users, Box, Play, Square, Terminal, Download,
-  AlertTriangle, Wallet, Settings, Trash2, Lock
+  AlertTriangle, Wallet, Settings, Trash2, Lock, ChevronRight, TrendingUp as Stake
 } from 'lucide-react';
 import { api } from '../lib/api';
 import ConfirmModal from './ConfirmModal';
 
-function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
+function Dashboard({ nodeStatus: initialStatus, onRefresh, goToStep }) {
   const [status, setStatus] = useState(initialStatus);
   const [balance, setBalance] = useState(null);
   const [staking, setStaking] = useState(null);
@@ -15,6 +15,7 @@ function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
   const [isLoading, setIsLoading] = useState({});
   const [error, setError] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showRestakeModal, setShowRestakeModal] = useState(false);
   const logsEndRef = useRef(null);
 
   useEffect(() => {
@@ -96,6 +97,20 @@ function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
     }
   };
 
+  const handleRestake = async () => {
+    setShowRestakeModal(false);
+    setIsLoading(prev => ({ ...prev, restake: true }));
+    setError(null);
+    try {
+      await api.restake();
+      await loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(prev => ({ ...prev, restake: false }));
+    }
+  };
+
   // Check what's missing in the setup
   const hasWallet = status?.hasWallet;
   const isNodeInitialized = status?.isNodeInitialized;
@@ -123,36 +138,53 @@ function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
 
         {/* Setup Warnings */}
         <div className="space-y-3 mb-8">
-          {/* Wallet Warning */}
+          {/* Wallet Warning - always show first if no wallet */}
           {!hasWallet && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <Wallet className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <div>
-                  <h3 className="text-red-400 font-semibold">Carteira Necessária</h3>
-                  <p className="text-red-400/80 text-sm">
-                    Crie ou importe uma carteira em <strong>Carteira</strong> para continuar.
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Wallet className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-red-400 font-semibold">Carteira Necessária</h3>
+                    <p className="text-red-400/80 text-sm">
+                      Crie ou importe uma carteira para continuar.
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => goToStep && goToStep('wallet')}
+                  className="flex items-center gap-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition"
+                >
+                  Configurar
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
 
-          {/* Node Setup Warning */}
-          {(!isNodeInitialized || !isValidator) && (
+          {/* Node Setup Warning - only show if wallet exists but setup incomplete */}
+          {hasWallet && (!isNodeInitialized || !isValidator) && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <Settings className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <div>
-                  <h3 className="text-red-400 font-semibold">Setup Node Incompleto</h3>
-                  <p className="text-red-400/80 text-sm">
-                    {!isNodeInitialized 
-                      ? 'Inicialize o node e crie seu validador em '
-                      : 'Crie seu validador em '
-                    }
-                    <strong>Setup Node</strong> para ativar seu validador.
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-red-400 font-semibold">Setup Node Incompleto</h3>
+                    <p className="text-red-400/80 text-sm">
+                      {!isNodeInitialized 
+                        ? 'Inicialize o node e crie seu validador.'
+                        : 'Crie seu validador para ativar.'
+                      }
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => goToStep && goToStep('node_setup')}
+                  className="flex items-center gap-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition"
+                >
+                  Configurar
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
@@ -270,6 +302,16 @@ function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
               <Download className="w-5 h-5" />
               {isLoading.withdraw ? 'Sacando...' : 'Sacar Recompensas'}
             </button>
+
+            <button
+              onClick={() => setShowRestakeModal(true)}
+              disabled={isLoading.restake || !isValidator}
+              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!isValidator ? 'Crie um validador primeiro' : ''}
+            >
+              <TrendingUp className="w-5 h-5" />
+              {isLoading.restake ? 'Stakando...' : 'Stakar Recompensas'}
+            </button>
           </div>
 
           {error && (
@@ -346,6 +388,17 @@ function Dashboard({ nodeStatus: initialStatus, onRefresh }) {
         title="Sacar Recompensas"
         message="Deseja sacar todas as suas recompensas de validador? Os tokens serão transferidos para sua carteira."
         confirmText="Sacar"
+        type="info"
+      />
+
+      {/* Restake Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showRestakeModal}
+        onClose={() => setShowRestakeModal(false)}
+        onConfirm={handleRestake}
+        title="Stakar Recompensas"
+        message="Deseja stakar todas as suas recompensas? Os tokens serão delegados automaticamente ao seu validador, aumentando seu stake."
+        confirmText="Stakar"
         type="info"
       />
     </div>
